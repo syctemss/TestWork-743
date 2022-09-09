@@ -3,7 +3,7 @@
 /**
  * Plugin Name: Bitbucket743
  * Description: Test Assignment | AbeloHost
- * Autor:       Oleksandr Bilyk
+ * Autor:       O.Bilyk
  * Version:     1.0
  */
 
