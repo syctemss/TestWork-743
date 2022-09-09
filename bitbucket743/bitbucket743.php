@@ -3,7 +3,7 @@
 /**
  * Plugin Name: Bitbucket743
  * Description: Test Assignment | AbeloHost
- * Autor:       O.Bilyk
+ * Autor:       Oleksandr Bilyk
  * Version:     1.0
  */
 
@@ -102,30 +102,12 @@ class PageTemplater {
                                     </select>
                                 </div>
                                 <div class="col-md-12">
-                                    <input type="submit" onclick="returnformValidations" class="btn btn-primary" value="SUBMIT" name="submitpost" />
+                                    <input type="submit" class="btn btn-primary" value="SUBMIT" name="submitpost" />
                                 </div>
                             </form>
-            <script>
-                // function returnformValidations() {
-                //     var title = document.getElementById("title").value;
-                //     var price = document.getElementById("price").value;
-                //     var category = document.getElementById("category").value;
-                //     if(title=="") { alert("Please enter post title!"); return false; }
-                //     if(price=="") { alert("Please enter post price!"); return false; }
-                //     if(category=="") { alert("Please choose post category!"); return false; }
-                // }
-            </script>
-</div>
-<footer class="entry-footer default-max-width">
-<span class="edit-link"><a class="post-edit-link" href="https://avista.ml/wp-admin/post.php?post=139&amp;action=edit">Изменить <span class="screen-reader-text">Test</span></a></span> </footer>
-</article>
-
-
-
-
-
-                            
-            <?php get_footer(); 
+                        </div>
+                    </article>        
+                    <?php get_footer(); 
             if(is_user_logged_in()) { 
                 if(isset($_POST['ispost'])) {
                     global $current_user;
@@ -158,7 +140,7 @@ class PageTemplater {
                     }
                     if ($attach_id > 0) {
                         update_post_meta($pid, '_thumbnail_id', $attach_id);
-                        update_post_meta($pid, 'product_media', $attach_id);
+                        update_post_meta($pid, 'product_media', wp_get_attachment_url($attach_id));
                     }
                     $my_post1 = get_post($attach_id);
                     $my_post2 = get_post($pid);
