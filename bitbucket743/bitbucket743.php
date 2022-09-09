@@ -63,8 +63,8 @@ class PageTemplater {
                                     <input type="text" class="form-control" name="title" />
                                 </div>
                                 <div class="col-md-12">
-                                    <label class="control-label">Sample Content</label>
-                                    <textarea class="form-control" rows="8" name="sample_content"></textarea>
+                                    <label class="control-label">Price</label>
+                                    <input type="number" class="form-control" rows="8" name="price" />
                                 </div>
                                 <div class="col-md-12">
                                     <label class="control-label">Choose Category</label>
@@ -106,10 +106,10 @@ class PageTemplater {
             <script>
                 function returnformValidations() {
                     var title = document.getElementById("title").value;
-                    var content = document.getElementById("content").value;
+                    var price = document.getElementById("price").value;
                     var category = document.getElementById("category").value;
                     if(title=="") { alert("Please enter post title!"); return false; }
-                    if(content=="") { alert("Please enter post content!"); return false; }
+                    if(price=="") { alert("Please enter post price!"); return false; }
                     if(category=="") { alert("Please choose post category!"); return false; }
                 }
             </script>
@@ -119,19 +119,13 @@ class PageTemplater {
                     global $current_user;
                     get_currentuserinfo();
                     $user_login = $current_user->user_login;
-                    $user_email = $current_user->user_email;
-                    $user_firstname = $current_user->user_firstname;
-                    $user_lastname = $current_user->user_lastname;
                     $user_id = $current_user->ID;
                     $post_title = $_POST['title'];
-                    $sample_image = $_FILES['sample_image']['name'];
-                    $post_content = $_POST['sample_content'];
-                    $category = $_POST['category'];
+                    $post_price = $_POST['price'];
                     $new_post = array(
-                        'post_title' => $post_title,
-                        'post_content' => $post_content,
+                        'post_title' => $post_title,                 
+                        //'post_content' => $post_content,
                         'post_status' => 'publish',
-                        //'post_name' => 'pending',
                         'post_type' => $post_type,
                         'post_type' => 'product',
                         'post_category' => $category
@@ -143,6 +137,7 @@ class PageTemplater {
                         require_once(ABSPATH . "wp-admin" . '/includes/file.php');
                         require_once(ABSPATH . "wp-admin" . '/includes/media.php');
                     }
+                    update_post_meta( $pid, '_price', $post_price );
                     if ($_FILES) {
                         foreach ($_FILES as $file => $array) {
                             if ($_FILES[$file]['error'] !== UPLOAD_ERR_OK) {
@@ -236,16 +231,43 @@ function Date_($post){
 
 function Select_() {
     global $product, $post;
-    woocommerce_wp_select( [
-        'id'      => '_select',
-        'label'   => 'Выпадающий список',
-        'options' => [
-            'one'   => __( 'Option 1', 'woocommerce' ),
-            'two'   => __( 'Option 2', 'woocommerce' ),
-            'three' => __( 'Option 3', 'woocommerce' ),
-        ],
-    ] );
-    echo ("Type: " . get_the_terms( $product_id,'product_type')[0]->slug);
+    ?>
+        <label class="control-label">Choose Type</label>
+        <select name="category" class="form-control">
+        <?php
+            $args = array(
+                'number'     => $number,
+                'orderby'    => $orderby,
+                'order'      => $order,
+                'hide_empty' => $hide_empty,
+                'include'    => $ids
+            );
+            $product_categories = get_terms( 'product_type', $args );
+            $args = array(
+                'taxonomy'   => "product_type",
+                'number'     => $number,
+                'orderby'    => $orderby,
+                'order'      => $order,
+                'hide_empty' => $hide_empty,
+                'include'    => $ids
+            );
+            $catList = get_terms($args);
+            foreach($catList as $listval) { echo '<option value="'.$listval->term_id.'">'.$listval->name.'</option>'; }
+        ?>
+        </select>
+    <?php
+
+    // woocommerce_wp_select( [
+    //     'id'      => '_select',
+    //     'label'   => 'Выпадающий список',
+    //     'options' => [
+    //         'one'   => __( 'Option 1', 'woocommerce' ),
+    //         'two'   => __( 'Option 2', 'woocommerce' ),
+    //         'three' => __( 'Option 3', 'woocommerce' ),
+    //     ],
+    // ] );
+
+    echo ("<br> Current Type: " . get_the_terms( $product_id,'product_type')[0]->slug);
 }
 add_action( 'save_post', function ($post_id) { 
     if (isset($_POST['Select_'])) { update_post_meta($post_id, 'Select_',$_POST['Select_']); }
