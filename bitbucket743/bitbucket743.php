@@ -7,6 +7,8 @@
  * Version:     1.0
  */
 
+
+
 // Create Template from plugin
 class PageTemplater {
     private static $instance;
@@ -46,14 +48,9 @@ class PageTemplater {
         $file = plugin_dir_path( __FILE__ ). get_post_meta( $post->ID, '_wp_page_template', true );
         if ( file_exists( $file ) ) { return $file; } else {            
             get_header(); ?>
-            <main id="site-content">
-                <article class="post-2 page type-page status-publish hentry" id="post-2">
-                    <header class="entry-header has-text-align-center header-footer-group">
-                        <div class="entry-header-inner section-inner medium">
-                            <h1 class="entry-title">Add Product</h1>
-                        </div>
-                    </header>
-                    <div class="post-inner thin ">
+            <article id="post-139" class="page type-page status-publish hentry entry">
+                <header class="entry-header alignwide">
+                    <h1 class="entry-title">Add Product</h1> </header>
                         <div class="entry-content">
                             <form class="form-horizontal" name="form" method="post" enctype="multipart/form-data">
                                 <input type="hidden" name="ispost" value="1" />
@@ -69,6 +66,7 @@ class PageTemplater {
                                 <div class="col-md-12">
                                     <label class="control-label">Choose Category</label>
                                     <select name="category" class="form-control">
+                                        <option value="">--</option>
                                         <?php
                                             $args = array(
                                                 'number'     => $number,
@@ -91,28 +89,42 @@ class PageTemplater {
                                         ?>
                                     </select>
                                 </div>
+                                <hr>
                                 <div class="col-md-12">
                                     <label class="control-label">Upload Post Image</label>
                                     <input type="file" name="sample_image" class="form-control" />
+                                    <label class="control-label">Select Type</label>
+                                    <select name="select_type" id="select_type" class="form-control">
+                                        <option value="">--</option>            
+                                        <option value="rare">rare</option>
+                                        <option value="frequent">frequent</option>
+                                        <option value="unusual">unusual</option>
+                                    </select>
                                 </div>
                                 <div class="col-md-12">
                                     <input type="submit" onclick="returnformValidations" class="btn btn-primary" value="SUBMIT" name="submitpost" />
                                 </div>
                             </form>
-                        </div>
-                    </div>
-                </article>
-            </main>
             <script>
-                function returnformValidations() {
-                    var title = document.getElementById("title").value;
-                    var price = document.getElementById("price").value;
-                    var category = document.getElementById("category").value;
-                    if(title=="") { alert("Please enter post title!"); return false; }
-                    if(price=="") { alert("Please enter post price!"); return false; }
-                    if(category=="") { alert("Please choose post category!"); return false; }
-                }
+                // function returnformValidations() {
+                //     var title = document.getElementById("title").value;
+                //     var price = document.getElementById("price").value;
+                //     var category = document.getElementById("category").value;
+                //     if(title=="") { alert("Please enter post title!"); return false; }
+                //     if(price=="") { alert("Please enter post price!"); return false; }
+                //     if(category=="") { alert("Please choose post category!"); return false; }
+                // }
             </script>
+</div>
+<footer class="entry-footer default-max-width">
+<span class="edit-link"><a class="post-edit-link" href="https://avista.ml/wp-admin/post.php?post=139&amp;action=edit">Изменить <span class="screen-reader-text">Test</span></a></span> </footer>
+</article>
+
+
+
+
+
+                            
             <?php get_footer(); 
             if(is_user_logged_in()) { 
                 if(isset($_POST['ispost'])) {
@@ -231,44 +243,17 @@ function Date_($post){
 function Select_() {
     global $product, $post;
     ?>
-        <label class="control-label">Choose Type</label>
-        <select name="category" class="form-control">
-        <?php
-            $args = array(
-                'number'     => $number,
-                'orderby'    => $orderby,
-                'order'      => $order,
-                'hide_empty' => $hide_empty,
-                'include'    => $ids
-            );
-            $product_categories = get_terms( 'product_type', $args );
-            $args = array(
-                'taxonomy'   => "product_type",
-                'number'     => $number,
-                'orderby'    => $orderby,
-                'order'      => $order,
-                'hide_empty' => $hide_empty,
-                'include'    => $ids
-            );
-            $catList = get_terms($args);
-            foreach($catList as $listval) { echo '<option value="'.$listval->term_id.'">'.$listval->name.'</option>'; }
-        ?>
+        <label class="control-label">Select Type</label>
+        <select name="select_type" id="select_type" class="form-control">
+            <option value="<?php echo get_post_meta($post->ID,'select_type', true); ?>"><?php echo get_post_meta($post->ID,'select_type', true); ?></option>            
+            <option value="rare">rare</option>
+            <option value="frequent">frequent</option>
+            <option value="unusual">unusual</option>
         </select>
     <?php
-    // Variant #2
-    // woocommerce_wp_select( [
-    //     'id'      => '_select',
-    //     'label'   => 'Выпадающий список',
-    //     'options' => [
-    //         'one'   => __( 'Option 1', 'woocommerce' ),
-    //         'two'   => __( 'Option 2', 'woocommerce' ),
-    //         'three' => __( 'Option 3', 'woocommerce' ),
-    //     ],
-    // ] );
-    echo ("<br> Current Type: " . get_the_terms( $product_id,'product_type')[0]->slug);
 }
 add_action( 'save_post', function ($post_id) { 
-    if (isset($_POST['Select_'])) { update_post_meta($post_id, 'Select_',$_POST['Select_']); }
+    if (isset($_POST['select_type'])) { update_post_meta($post_id, 'select_type',$_POST['select_type']); }
 });
 
 // AJAX
