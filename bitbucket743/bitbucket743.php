@@ -22,7 +22,7 @@ class PageTemplater {
         } else { add_filter( 'theme_page_templates', array( $this, 'add_new_template' ) ); }
         add_filter( 'wp_insert_post_data', array( $this, 'register_project_templates' ) );
         add_filter( 'template_include', array( $this, 'view_project_template') );
-        $this->templates = array( 'front_add_product.php' => 'Front Add Product', );
+        $this->templates = array( 'add_product.php' => 'Add Product', );
     } 
     public function add_new_template( $posts_templates ) {
         $posts_templates = array_merge( $posts_templates, $this->templates );
@@ -40,7 +40,7 @@ class PageTemplater {
     public function view_project_template( $template ) {
         global $post;
         if ( ! $post ) { return $template; }
-        if ( ! isset( $this->templates[get_post_meta( $post->ID, '_wp_page_template', true )] ) ) {
+        if ( ! isset( $this->templates[ get_post_meta( $post->ID, '_wp_page_template', true ) ] ) ) {
             return $template;
         }
         $file = plugin_dir_path( __FILE__ ). get_post_meta( $post->ID, '_wp_page_template', true );
@@ -50,7 +50,7 @@ class PageTemplater {
                 <article class="post-2 page type-page status-publish hentry" id="post-2">
                     <header class="entry-header has-text-align-center header-footer-group">
                         <div class="entry-header-inner section-inner medium">
-                            <h1 class="entry-title">Front Add Product</h1>
+                            <h1 class="entry-title">Add Product</h1>
                         </div>
                     </header>
                     <div class="post-inner thin ">
@@ -96,7 +96,7 @@ class PageTemplater {
                                     <input type="file" name="sample_image" class="form-control" />
                                 </div>
                                 <div class="col-md-12">
-                                    <input type="submit" class="btn btn-primary" value="SUBMIT" name="submitpost" />
+                                    <input type="submit" onclick="returnformValidations" class="btn btn-primary" value="SUBMIT" name="submitpost" />
                                 </div>
                             </form>
                         </div>
@@ -140,14 +140,13 @@ class PageTemplater {
                     update_post_meta( $pid, '_price', $post_price );
                     if ($_FILES) {
                         foreach ($_FILES as $file => $array) {
-                            if ($_FILES[$file]['error'] !== UPLOAD_ERR_OK) {
-                                return "upload error : " . $_FILES[$file]['error'];
-                            }
+                            if ($_FILES[$file]['error'] !== UPLOAD_ERR_OK) { return "upload error : " . $_FILES[$file]['error']; }
                             $attach_id = media_handle_upload( $file, $pid );
                         }         
                     }
                     if ($attach_id > 0) {
                         update_post_meta($pid, '_thumbnail_id', $attach_id);
+                        update_post_meta($pid, 'product_media', $attach_id);
                     }
                     $my_post1 = get_post($attach_id);
                     $my_post2 = get_post($pid);
@@ -164,12 +163,12 @@ add_action( 'plugins_loaded', array( 'PageTemplater', 'get_instance' ) );
 // Create Page with Template from Plugin (just activate plugin) | duplicating todo, easy 
 function add_page() {
     $my_post = array(
-      'post_title'    => wp_strip_all_tags( 'Front Add Product' ),
-      'post_status'   => 'publish',
-      'post_author'   => 1,
-      'post_type'     => 'page',
+        'post_title'    => wp_strip_all_tags( 'Add Product' ),
+        'post_status'   => 'publish',
+        'post_author'   => 1,
+        'post_type'     => 'page',
     );
-    update_post_meta( wp_insert_post( $my_post ), '_wp_page_template', 'front_add_product.php' );
+    if ( empty(get_page_by_title('Add Product')) ) { update_post_meta( wp_insert_post( $my_post ), '_wp_page_template', 'add_product.php' ); }
 }
 register_activation_hook(__FILE__, 'add_page');
 //End Page
@@ -221,11 +220,11 @@ add_action( 'save_post', function ($post_id) {
 function Date_($post){
     $the_date1 = get_the_date( 'l F j, Y' );
     $_format = ! empty( $format ) ? $format : get_option( 'date_format' );
+    // Variant #2
     $the_date2 = get_post_time( $_format, false, $post, true );
     ?>
         <label for="Date_">Created at:
         <input id="Date_" type="text" name="Date_" value="<?php echo $the_date1;?>" />
-        </span><?php //echo($the_date2); ?></span>
     <?php
 }
 
@@ -256,7 +255,7 @@ function Select_() {
         ?>
         </select>
     <?php
-
+    // Variant #2
     // woocommerce_wp_select( [
     //     'id'      => '_select',
     //     'label'   => 'Выпадающий список',
@@ -266,7 +265,6 @@ function Select_() {
     //         'three' => __( 'Option 3', 'woocommerce' ),
     //     ],
     // ] );
-
     echo ("<br> Current Type: " . get_the_terms( $product_id,'product_type')[0]->slug);
 }
 add_action( 'save_post', function ($post_id) { 
@@ -281,7 +279,7 @@ add_action( 'save_post', function ( $post_id ) { if ( defined( 'DOING_AUTOSAVE' 
 } );
 function Save_() {
     ?>
-        <button type="button" id="Save_">Load</button>
+        <button type="button" id="Save_">Save AJAX</button>
         <span id="save_result"></span>
     <?php
     if ( get_post_type() !== 'post' ) {
@@ -307,8 +305,9 @@ function Save_() {
                             if (response.success) {
                                 ajax_updated = wp.autosave.getCompareString()
                                 $('#save_result').text('Saved post successfully'); 
-                                //console.log('Saved post successfully')
-                            } else { console.log('ERROR: Server returned false. ', response) }
+                            } else { 
+                                $('#save_result').text('ERROR: Server returned false. '); 
+                            }
                         }).fail(function (response) { console.log('ERROR: Could not contact server. ', response) 
                         }).done(function () {
                             if ( wp.autosave ) { wp.autosave.enableButtons(); }
@@ -325,14 +324,14 @@ function Save_() {
 
 function Clear_($post) {
     ?>
-        <button id="clearButton2">Clear2</button>
-        <span id="clear_2"></span>
-        <script>
-            // document.getElementById("clearButton").onclick = function(e) {
-            //     document.getElementById("media_URL").value = "";
-            //     $('#clear_').text('Need Saving'); 
-            // }
-        </script>
+    <button id="clearButton2">Clear2</button>
+    <span id="clear_2"></span>
+    <script>
+        // document.getElementById("clearButton").onclick = function(e) {
+        //     document.getElementById("media_URL").value = "";
+        //     $('#clear_').text('Need Saving'); 
+        // }
+    </script>
     <?php
 }
 
